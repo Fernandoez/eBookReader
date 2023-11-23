@@ -10,19 +10,23 @@ This Dart program serves as an ebook reader application. The application retriev
 
 <img src="https://github.com/Fernandoez/eBookReader/assets/69535503/d231ce4c-7119-4ed4-8bcc-5ad73e1e66d5" alt="Foto 1" width="200"/>
 
+
 3 - Browse and Download Books: Open the app, browse the list of available books, and select the ones you want to download. The app will display the cover, title, and author information.
 
 4 - Track Downloads: Once a book is selected for download, the card's icon will turn red, indicating the download is done.
 
 <img src="https://github.com/Fernandoez/eBookReader/assets/69535503/e0a0b6c6-b0d3-46f2-be51-6811d24cc6cd" alt="Foto 2" width="200"/>
 
+
 5 - Access Downloaded Ebooks: Navigate to the 'Baixados' tab to access the downloaded ebooks.
 
 <img src="https://github.com/Fernandoez/eBookReader/assets/69535503/e1e8e71a-d216-48ba-b550-09cf01bf4436" alt="Foto 3" width="200"/>
 
+
 6 - Read Ebooks: Select the ebook you want to read, and it will be opened using the Vocsy Epub Viewer plugin.
 
 <img src="https://github.com/Fernandoez/eBookReader/assets/69535503/9f8df1fe-c646-493f-acbe-30699c609591" alt="Foto 4" width="200"/>
+
 
 ## Dependencies
 Vocsy Epub Viewer: A plugin used to open and view ebooks in EPUB format.
