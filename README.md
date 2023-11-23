@@ -7,7 +7,8 @@ This Dart program serves as an ebook reader application. The application retriev
 1 - Download the APK: An APK for testing purposes is available on Google Drive [here](https://drive.google.com/drive/folders/1BpYaCcFp0QY1ZZFjsLpqYh0m78Dyg86X?usp=sharing).
 
 2 - Install the App: Download the APK from the provided Google Drive link and install the application on your mobile device.
-![Captura de tela 2023-11-23 125649](https://github.com/Fernandoez/eBookReader/assets/69535503/d231ce4c-7119-4ed4-8bcc-5ad73e1e66d5){:width="200px"}
+
+<img src="https://github.com/Fernandoez/eBookReader/assets/69535503/d231ce4c-7119-4ed4-8bcc-5ad73e1e66d5" alt="Foto 1" width="200"/>
 
 3 - Browse and Download Books: Open the app, browse the list of available books, and select the ones you want to download. The app will display the cover, title, and author information.
 
