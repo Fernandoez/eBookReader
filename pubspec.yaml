@@ -37,6 +37,9 @@ dependencies:
   http: ^1.1.0
   flutter_file_downloader: ^1.1.4
   shared_preferences: ^2.2.2
+  path_provider: ^2.1.1
+  file_picker: ^6.1.1
+  vocsy_epub_viewer: ^2.0.0
 
 dev_dependencies:
   flutter_test:

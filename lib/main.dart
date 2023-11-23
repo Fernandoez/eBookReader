@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'books.dart';
 import 'utils.dart';
+import 'readpage.dart';
 
 void main() {
   runApp(const HomePage());
@@ -62,10 +63,6 @@ class _NavigationState extends State<StatefulWidget> {
             icon: Icon(Icons.download_done),
             label: 'Baixados',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.bookmark),
-            label: 'Favoritos',
-          ),
         ],
       ),
       body: <Widget>[
@@ -89,8 +86,7 @@ class _NavigationState extends State<StatefulWidget> {
         ),
 
         /// Downloaded page
-
-        /// Bookmark page
+        const ReadPage(),
       ][currentPageIndex],
     );
   }
@@ -149,12 +145,31 @@ class _BookCardState extends State<BookCard> {
                       ),
                       TextButton(
                         onPressed: () => {
-                          Utils().bookDownload(widget.book),
-                          saveBookDownloadState(),
-                          setState(() {
-                            isBookDownloaded = true;
-                          }),
                           Navigator.pop(context, 'Sim'),
+                          Utils().bookDownload(widget.book).then((bool result) {
+                            if (result) {
+                              // Se o download for bem-sucedido
+                              saveBookDownloadState();
+                              setState(() {
+                                isBookDownloaded = true;
+                              });
+                            } else {
+                              showDialog<String>(
+                                  context: context,
+                                  builder: (BuildContext context) =>
+                                      AlertDialog(
+                                        title: const Text('Download'),
+                                        content: Text(
+                                            'O livro: ${widget.book.title} já foi baixado'),
+                                        actions: <Widget>[
+                                          TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context, 'Ok'),
+                                              child: const Text('Ok'))
+                                        ],
+                                      ));
+                            }
+                          })
                         },
                         child: const Text('Sim'),
                       ),
@@ -176,25 +191,27 @@ class _BookCardState extends State<BookCard> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.book.title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.book.title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        widget.book.author,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.book.author,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   isBookDownloaded
                       ? const Icon(
