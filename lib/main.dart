@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
-import 'dart:convert';
-import 'package:flutter_file_downloader/flutter_file_downloader.dart';
+import 'books.dart';
+import 'utils.dart';
 
 void main() {
   runApp(const HomePage());
@@ -96,10 +96,23 @@ class _NavigationState extends State<StatefulWidget> {
   }
 }
 
-class BookCard extends StatelessWidget {
+class BookCard extends StatefulWidget {
   final Book book;
 
   const BookCard({required this.book, super.key});
+
+  @override
+  _BookCardState createState() => _BookCardState();
+}
+
+class _BookCardState extends State<BookCard> {
+  bool isBookDownloaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    loadBookDownloadState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,29 +122,50 @@ class BookCard extends StatelessWidget {
       margin: const EdgeInsets.all(8),
       child: InkWell(
         splashColor: Colors.blue.withAlpha(60),
-        onTap: () => showDialog<String>(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text('Download!'),
-            content: Text('Deseja fazer o download do livro: ${book.title}?'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.pop(context, 'Não'),
-                child: const Text('Não'),
-              ),
-              TextButton(
-                onPressed: () => {
-                  bookDownload(book),
-                  Navigator.pop(context, 'Sim')},
-                child: const Text('Sim'),
-              ),
-            ],
-          ),
-        ),
+        onTap: () {
+          isBookDownloaded
+              ? showDialog<String>(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                        title: const Text('Download'),
+                        content: Text(
+                            'O livro: ${widget.book.title} já foi baixado'),
+                        actions: <Widget>[
+                          TextButton(
+                              onPressed: () => Navigator.pop(context, 'Ok'),
+                              child: const Text('Ok'))
+                        ],
+                      ))
+              : showDialog<String>(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    title: const Text('Download!'),
+                    content: Text(
+                        'Deseja fazer o download do livro: ${widget.book.title}?'),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, 'Não'),
+                        child: const Text('Não'),
+                      ),
+                      TextButton(
+                        onPressed: () => {
+                          Utils().bookDownload(widget.book),
+                          saveBookDownloadState(),
+                          setState(() {
+                            isBookDownloaded = true;
+                          }),
+                          Navigator.pop(context, 'Sim'),
+                        },
+                        child: const Text('Sim'),
+                      ),
+                    ],
+                  ),
+                );
+        },
         child: Column(
           children: [
             Image.network(
-              book.coverUrl,
+              widget.book.coverUrl,
               height: 120,
               width: double.infinity,
               fit: BoxFit.cover,
@@ -146,7 +180,7 @@ class BookCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        book.title,
+                        widget.book.title,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -154,7 +188,7 @@ class BookCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        book.author,
+                        widget.book.author,
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -162,11 +196,17 @@ class BookCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const Icon(
-                    Icons.download,
-                    color: Colors.green,
-                    size: 30,
-                  ),
+                  isBookDownloaded
+                      ? const Icon(
+                          Icons.download_done,
+                          color: Colors.red,
+                          size: 30,
+                        )
+                      : const Icon(
+                          Icons.download,
+                          color: Colors.green,
+                          size: 30,
+                        ),
                 ],
               ),
             ),
@@ -176,58 +216,17 @@ class BookCard extends StatelessWidget {
     );
   }
 
-  void bookDownload(Book book) {
-    if (book.downloadUrl.isNotEmpty) {
-      FileDownloader.downloadFile(
-          url: book.downloadUrl,
-          name: book.title,
-          onProgress: (name, progress) {},
-          onDownloadCompleted: (path) {
-            print('Arquivo baixado em: $path');
-          });
-    } else {
-      print('URL de download não disponível para o livro ${book.title}');
-    }
+  Future<void> loadBookDownloadState() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool downloaded = prefs.getBool(widget.book.title) ?? false;
+
+    setState(() {
+      isBookDownloaded = downloaded;
+    });
   }
-}
 
-Future<List<Book>> fetchBooks() async {
-  final response = await http.get(Uri.parse('https://escribo.com/books.json'));
-
-  if (response.statusCode == 200) {
-    // If the server returned a 200 OK response,
-    // then parse the JSON and return a list of books.
-    final List<dynamic> data = jsonDecode(response.body);
-    return data.map((item) => Book.fromJson(item)).toList();
-  } else {
-    // If the server did not return a 200 OK response,
-    // then throw an exception.
-    throw Exception('Failed to load books');
-  }
-}
-
-class Book {
-  final int id;
-  final String title;
-  final String author;
-  final String coverUrl;
-  final String downloadUrl;
-
-  const Book({
-    required this.id,
-    required this.title,
-    required this.author,
-    required this.coverUrl,
-    required this.downloadUrl,
-  });
-
-  factory Book.fromJson(Map<String, dynamic> json) {
-    return Book(
-      id: json['id'] as int,
-      title: json['title'] as String,
-      author: json['author'] as String,
-      coverUrl: json['cover_url'] as String,
-      downloadUrl: json['download_url'] as String,
-    );
+  Future<void> saveBookDownloadState() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(widget.book.title, isBookDownloaded);
   }
 }
