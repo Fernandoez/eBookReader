@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter_file_downloader/flutter_file_downloader.dart';
 
 void main() {
   runApp(const HomePage());
@@ -39,7 +40,6 @@ class _NavigationState extends State<StatefulWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Book Reader'),
@@ -69,7 +69,6 @@ class _NavigationState extends State<StatefulWidget> {
         ],
       ),
       body: <Widget>[
-
         /// Home page
         FutureBuilder<List<Book>>(
           future: futureBooks,
@@ -100,53 +99,95 @@ class _NavigationState extends State<StatefulWidget> {
 class BookCard extends StatelessWidget {
   final Book book;
 
-  const BookCard({required this.book, Key? key}) : super(key: key);
+  const BookCard({required this.book, super.key});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-        clipBehavior: Clip.hardEdge,
-        elevation: 5,
-        margin: const EdgeInsets.all(8),
-        child: InkWell(
-          splashColor: Colors.blue.withAlpha(30),
-          onTap: () {
-            debugPrint('Card tapped.');
-          },
-          child: Column(
-            children: [
-              Image.network(
-                book.coverUrl,
-                height: 120,
-                width: double.infinity,
-                fit: BoxFit.cover,
+      clipBehavior: Clip.hardEdge,
+      elevation: 5,
+      margin: const EdgeInsets.all(8),
+      child: InkWell(
+        splashColor: Colors.blue.withAlpha(60),
+        onTap: () => showDialog<String>(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const Text('Download!'),
+            content: Text('Deseja fazer o download do livro: ${book.title}?'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'Não'),
+                child: const Text('Não'),
               ),
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      book.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      book.author,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
+              TextButton(
+                onPressed: () => {
+                  bookDownload(book),
+                  Navigator.pop(context, 'Sim')},
+                child: const Text('Sim'),
               ),
             ],
           ),
-        ));
+        ),
+        child: Column(
+          children: [
+            Image.network(
+              book.coverUrl,
+              height: 120,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        book.title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        book.author,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Icon(
+                    Icons.download,
+                    color: Colors.green,
+                    size: 30,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void bookDownload(Book book) {
+    if (book.downloadUrl.isNotEmpty) {
+      FileDownloader.downloadFile(
+          url: book.downloadUrl,
+          name: book.title,
+          onProgress: (name, progress) {},
+          onDownloadCompleted: (path) {
+            print('Arquivo baixado em: $path');
+          });
+    } else {
+      print('URL de download não disponível para o livro ${book.title}');
+    }
   }
 }
 
