@@ -1,4 +1,4 @@
-# Ebooks Reader - (Desafio Tecnico 2 - Escribo)
+# Ebooks Reader
 
 ## Description
 This Dart program serves as an ebook reader application. The application retrieves a list of books, including their cover, title, and author, from this [API](https://escribo.com/books.json). Users can select and save ebooks to their mobile devices. By clicking on the desired ebook, the download is initiated, and the green icon on the card changes to indicate the download status. Users can then navigate to the 'Baixados' tab and select the ebook they wish to read. The ebook is opened using the [Vocsy Epub Viewer](https://pub.dev/packages/vocsy_epub_viewer) plugin.
